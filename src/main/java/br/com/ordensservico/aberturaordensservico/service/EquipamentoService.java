@@ -6,52 +6,71 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import br.com.ordensservico.aberturaordensservico.model.Equipamento;
+import br.com.ordensservico.aberturaordensservico.model.Setor;
 import br.com.ordensservico.aberturaordensservico.repository.EquipamentoRepository;
+import br.com.ordensservico.aberturaordensservico.repository.SetorRepository;
 
 @Service 
 public class EquipamentoService {
 
-     private final EquipamentoRepository equipamentosRepository;
+     private final EquipamentoRepository equipamentoRepository;
+     private final SetorRepository setorRepository;
 
-    public EquipamentoService(EquipamentoRepository equipamentosRepository) {
-        this.equipamentosRepository = equipamentosRepository;
+
+    public EquipamentoService(
+            EquipamentoRepository equipamentoRepository,   
+            SetorRepository setorRepository) {
+
+        this.equipamentoRepository = equipamentoRepository;
+        this.setorRepository = setorRepository;
     }
 
-    public Equipamento cadastrar (Equipamento equipamentos) {
-        return equipamentosRepository.save(equipamentos);
+    public Equipamento cadastrar (Equipamento equipamento) {
+       
+        Integer setorId = equipamento.getSetor().getId();
+       
+       Setor setor = setorRepository.findById(setorId)
+                .orElseThrow(() ->
+                        new RuntimeException("Setor não encontrado"));
+       
+        equipamento.setSetor(setor);                
+
+        return equipamentoRepository.save(equipamento);
+
+        
     }
 
     public List<Equipamento> Listar() {
-        return equipamentosRepository.findAll();
+        return equipamentoRepository.findAll();
     }
     public Optional<Equipamento> buscarPorid(Integer id) {
-        return equipamentosRepository.findById(id);
-    }
+        return equipamentoRepository.findById(id);
+    } 
     public Optional<Equipamento> atualizar(
         Integer id, Equipamento novosDados) {
       
-      Optional<Equipamento> equipamentosEncontrado = equipamentosRepository.findById(id);      
+      Optional<Equipamento> equipamentoEncontrado = equipamentoRepository.findById(id);      
       
-      if (equipamentosEncontrado.isEmpty()){
+      if (equipamentoEncontrado.isEmpty()){
         return Optional.empty();
       }
 
-       Equipamento equipamentos = equipamentosEncontrado.get();
+       Equipamento equipamento = equipamentoEncontrado.get();
        
-       equipamentos.setNome(novosDados.getNome());
-       equipamentos.setNumeroPatrimonio(novosDados.getNumeroPatrimonio());
-       equipamentos.setSetor(novosDados.getSetor());
+       equipamento.setNome(novosDados.getNome());
+       equipamento.setNumeroPatrimonio(novosDados.getNumeroPatrimonio());
+       equipamento.setSetor(novosDados.getSetor());
     
-      return Optional.of(equipamentosRepository.save(equipamentos));    
+      return Optional.of(equipamentoRepository.save(equipamento));    
     }
 
     public boolean excluir(Integer id)  {
       
-        if (!equipamentosRepository.existsById(id)) {
+        if (!equipamentoRepository.existsById(id)) {
             return false;
         }
 
-        equipamentosRepository.deleteById(id);
+        equipamentoRepository.deleteById(id);
         return true;
     }
 }
