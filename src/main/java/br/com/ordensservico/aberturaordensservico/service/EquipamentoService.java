@@ -5,10 +5,12 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import br.com.ordensservico.aberturaordensservico.dto.EquipamentoRequest;
 import br.com.ordensservico.aberturaordensservico.model.Equipamento;
 import br.com.ordensservico.aberturaordensservico.model.Setor;
 import br.com.ordensservico.aberturaordensservico.repository.EquipamentoRepository;
 import br.com.ordensservico.aberturaordensservico.repository.SetorRepository;
+
 
 @Service 
 public class EquipamentoService {
@@ -17,27 +19,27 @@ public class EquipamentoService {
      private final SetorRepository setorRepository;
 
 
-    public EquipamentoService(
-            EquipamentoRepository equipamentoRepository,   
-            SetorRepository setorRepository) {
-
+    public EquipamentoService(EquipamentoRepository equipamentoRepository, SetorRepository setorRepository) {
         this.equipamentoRepository = equipamentoRepository;
         this.setorRepository = setorRepository;
     }
 
-    public Equipamento cadastrar (Equipamento equipamento) {
-       
-        Integer setorId = equipamento.getSetor().getId();
-       
-       Setor setor = setorRepository.findById(setorId)
-                .orElseThrow(() ->
-                        new RuntimeException("Setor não encontrado"));
-       
-        equipamento.setSetor(setor);                
-
-        return equipamentoRepository.save(equipamento);
-
+    public Optional<Equipamento> cadastrar (EquipamentoRequest dadosEquipamento) {
+        Optional<Setor> setorEncontrado = setorRepository.findById(dadosEquipamento.getSetorId());        
+           
         
+        if(setorEncontrado.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Equipamento equipamento = new Equipamento();
+
+       
+        equipamento.setNome(dadosEquipamento.getNome());
+        equipamento.setNumeroPatrimonio(dadosEquipamento.getNumeroPatrimonio());
+        equipamento.setSetor(setorEncontrado.get());
+            
+        return Optional.of(equipamentoRepository.save(equipamento));
     }
 
     public List<Equipamento> Listar() {

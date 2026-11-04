@@ -1,5 +1,6 @@
 package br.com.ordensservico.aberturaordensservico.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.ordensservico.aberturaordensservico.dto.EquipamentoRequest;
 import br.com.ordensservico.aberturaordensservico.model.Equipamento;
+import br.com.ordensservico.aberturaordensservico.model.Setor;
 import br.com.ordensservico.aberturaordensservico.service.EquipamentoService;
 import jakarta.validation.Valid;
 
@@ -30,16 +33,26 @@ public class EquipamentoController {
 
     @PostMapping
     public ResponseEntity<Equipamento> cadastrar(
-            @Valid @RequestBody Equipamento equipamento) {
+            @Valid @RequestBody EquipamentoRequest equipamento) {
+       
+                Setor setorId = equipamento.getSetorId();
+
         
-        Equipamento equipamentoCadastrado = equipamentoService.cadastrar(equipamento);
-        
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(equipamentoCadastrado);
-        
-        
+        if ( setorId == null ) {
+            return ResponseEntity.badRequest().build();
         }
+
+        Optional<Equipamento> equipamento = equipamentoService.cadastrar(Setor setorId);
+        
+        if (equipamento.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(equipamento.get());
+    }
+
     
     @GetMapping 
     public ResponseEntity<List<Equipamento>> listar() {
